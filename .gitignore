@@ -36,9 +36,18 @@ testem.log
 /typings
 
 # e2e
-/e2e/*.js
-/e2e/*.map
+/e2e
 
 # System Files
 .DS_Store
 Thumbs.db
+
+# test files
+karma.conf.js
+protractor.conf.js
+
+# variables
+.env
+
+#uploads
+uploads

@@ -1,0 +1,13 @@
+nav ul a {
+    padding: 8px 15px;
+    margin-right: 8px;
+    background: salmon;
+    color: white;
+}
+
+nav ul a:hover {
+    text-decoration-line: none;
+    border: 1px solid salmon;
+    color: salmon;
+    background: white;
+}
