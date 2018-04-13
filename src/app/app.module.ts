@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule,  ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
@@ -10,6 +10,7 @@ import { CatEditComponent } from './cat-edit/cat-edit.component';
 import { CatService } from './cat.service';
 import { AppRoutingModule } from './app-routing.module';
 import { FilterPipe } from './filter.pipe';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -19,7 +20,7 @@ import { FilterPipe } from './filter.pipe';
     FilterPipe
   ],
   imports: [
-    BrowserModule, FormsModule, FormControl, HttpClientModule, ReactiveFormsModule, AppRoutingModule
+    BrowserModule, FormsModule,  HttpClientModule, ReactiveFormsModule, AppRoutingModule
   ],
   providers: [CatService],
   bootstrap: [AppComponent]

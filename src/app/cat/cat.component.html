@@ -1,0 +1,60 @@
+<div class="container">
+  <form class="form-inline">
+    <input type="text" [(ngModel)]="term" name="term" class="form-control" placeholder="Search">
+  </form>
+  <h1>Cats</h1>
+    <div class="row">
+    <div class="col-sm-12 col-md-4" *ngFor="let cat of (cats | filter: term)">
+      <div class="card" style="width: 18rem;">
+        <div class="card-head">
+          <h3>{{cat.title | uppercase}}</h3>
+          <small>{{cat.time}}</small>
+        </div>
+
+        <div class="card-body">
+          <div class="image">
+            <img class="card-img-top" src="{{cat.thumbnail}}">
+          </div>
+          <p>{{cat.details}}</p>
+        </div>
+
+        <div class="card-footer">
+          <button type="button" class="btn btn-success" [routerLink]="['/edit', cat._id]">Edit</button>
+          <button class="btn btn-primary" (click)="showCat(cat._id)" type="button" data-toggle="modal" data-target="#catModal">View More</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" *ngIf="selectedCat" id="catModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">{{selectedCat.title | uppercase}}
+          <small>{{selectedCat.time}}</small>
+        </h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img class="img-fluid" src="{{selectedCat.image}}" alt="selected cat image">
+        <div>
+          <p>
+            <b>{{selectedCat.category}}</b>
+          </p>
+          {{selectedCat.details}}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" [routerLink]="['/edit', selectedCat._id]" data-dismiss="modal">Edit</button>
+        <button type="button" class="btn btn-danger" (click)="deleteCat(selectedCat._id)" data-dismiss="modal">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <app-cat-edit [cat]="selectedCat"></app-cat-edit> -->

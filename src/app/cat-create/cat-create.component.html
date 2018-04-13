@@ -1,0 +1,33 @@
+<h1>Create new cat</h1>
+{{catForm.value | json}}
+<form #catForm="ngForm" (ngSubmit)="submit(catForm); catForm.reset(); routerLink='/cats'" novalidate>
+  <div class="form-group">
+    <label>Title</label>
+    <input type="text" class="form-control" name="title" ngModel #title="ngModel" placeholder="Enter title" minlength="2" required>
+    <div *ngIf="title.dirty && title.invalid && title.errors?.required" class="alert alert-danger">
+      Title field must be atleast 2 chars
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Category</label>
+    <input type="text" class="form-control" name="category" ngModel #category="ngModel" placeholder="Enter category" minlength="3"
+      required>
+    <div *ngIf="category.dirty && category.invalid && category.errors?.required" class="alert alert-danger">
+      Category field must be atleast 3 chars
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Details</label>
+    <textarea name="details" ngModel #details="ngModel" class="form-control" cols="50" rows="6" placeholder="Provide some details"
+      required></textarea>
+    <div *ngIf="details.dirty && details.invalid && details.errors?.required" class="alert alert-danger">
+      Details field cannot be blank
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Upload image</label>
+    <input type="file" name="image" (change)="file($event)" ngModel #image="ngModel" class="form-control-file" accept="image/*">
+  </div>
+
+  <button type="submit" [disabled]="catForm.invalid" class="btn btn-primary">Create</button>
+</form>

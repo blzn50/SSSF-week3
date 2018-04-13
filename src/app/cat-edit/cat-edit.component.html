@@ -1,0 +1,30 @@
+<h1>Edit the cat</h1>
+<form [formGroup]="catEditForm" (ngSubmit)="updateCat(catEditForm.value)" novalidate>
+  <div class="form-group">
+    <label>Title</label>
+    <input type="text" class="form-control" [(ngModel)]="cat.title" formControlName="title" placeholder="Enter title">
+  </div>
+  <div *ngIf="catEditForm.get('title').invalid && catEditForm.get('title').dirty" class="alert alert-danger">
+    Title is required
+  </div>
+  <div class="form-group">
+    <label>Category</label>
+    <input type="text" class="form-control" [(ngModel)]="cat.category" formControlName="category" placeholder="Enter category">
+  </div>
+  <div *ngIf="catEditForm.get('category').invalid && catEditForm.get('category').dirty" class="alert alert-danger">
+      Category is required
+    </div>
+  <div class="form-group">
+    <label>Details</label>
+    <textarea [(ngModel)]="cat.details" class="form-control" formControlName="details" rows="6" placeholder="Enter details"></textarea>
+  </div>
+  <div *ngIf="catEditForm.get('details').invalid && catEditForm.get('details').dirty" class="alert alert-danger">
+      Detail is required
+    </div>
+  <div class="form-group">
+    <label>Upload image</label>
+    <input type="file" [(ngModel)]="image" formControlName="image" class="form-control-file" accept="image/*">
+  </div>
+
+  <button type="submit" [disabled]="catEditForm.invalid" class="btn btn-primary">Save</button>
+</form>
