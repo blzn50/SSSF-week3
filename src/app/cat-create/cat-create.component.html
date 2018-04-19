@@ -1,5 +1,4 @@
 <h1>Create new cat</h1>
-{{catForm.value | json}}
 <form #catForm="ngForm" (ngSubmit)="submit(catForm); catForm.reset(); routerLink='/cats'" novalidate>
   <div class="form-group">
     <label>Title</label>

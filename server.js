@@ -6,13 +6,15 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const passport = require('passport');
-// const LocalStrategy = require('passport-local').Strategy;
+const LocalStrategy = require('passport-local').Strategy;
 // const moment = require('moment');
 const helmet = require('helmet');
 
 /* local imports */
-const cat = require('./server/models/schema');
+require('./server/models/schema');
+require('./server/models/users');
 const db = require('./server/models/database');
+require('./server/config/passport');
 const api = require('./server/routes/api');
 
 const port = 5500;
@@ -34,15 +36,17 @@ app.use(helmet());
 
 // passport.use(new LocalStrategy(
 //     (username, password, done) => {
-//         if (username !==process.env.USERNAME || password !==process.env.PASSWORD) {
-//             done(null, false, {message: 'Incorrect credentials'});
+//         console.log('here we go:' + username + password);
+//         console.log('comapre to:' + process.env.USERNAME + process.env.PASSWORD);
+//         if (username !== process.env.USERNAME || password !== process.env.PASSWORD) {
+//             done(null, false, { message: 'Incorrect credentials' });
 //             return;
 //         }
 //         return done(null, {});
 //     }
 // ));
 
-// app.use(passport.initialize());
+app.use(passport.initialize());
 
 // cors
 app.use((req, res, next) => {
@@ -51,26 +55,6 @@ app.use((req, res, next) => {
         'Origin, X-Requested-With, Content-Type, Accept');
     res.header('Access-Control-Allow-Methods',
         'POST, GET, PATCH, DELETE');
-    // res.format({
-    //     'text/plain': () => {
-    //         res.send('hey, i am text');
-    //     },
-
-    //     'text/html': () => {
-    //         res.send('<p>hey, i am html</p>');
-    //     },
-    //     'text/pdf': () => {
-    //         res.send('i\'m pdf');
-    //     },
-    //     'application/json': () => {
-    //         res.send({ message: 'hey, i am json' });
-    //     },
-
-    //     'default': () => {
-    //         // log the request and respond with 406
-    //         res.status(406).send('Not Acceptable');
-    //     },
-    // });
     next();
 });
 
@@ -81,24 +65,26 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 
-// app.get('/*', (req, res) => {
-//     const param1 = req.path;
-//     const queryparams = req.query;
-//     const ip = req.connection.remoteAddress || req.ip ||
-//         req.headers['x-forwarded-for'] || req.socket.remoteAddress ||
-//         req.connection.socket.remoteAddress;
+// app.post('/login', passport.authenticate('local', {
+//     successRedirect: '/api/cats',
+//     failureRedirect: '/test',
+//     session: false,
+// }));
 
-//     res.send('Got to root with path: ' + param1 +
-//         '<br> with query params: ' + JSON.stringify(queryparams) +
-//         '<br> cookies: ' + JSON.stringify(req.cookies) +
-//         '<br> timestamp: ' + moment().format('') +
-//         '<br> user-agent: ' + req.headers['user-agent'] +
-//         '<br> ip-address: ' + ip
-//     );
+// app.get('/test', (req, res) => {
+//     res.send('redirection from login error');
 // });
 
+// Catch unauthorised errors
+app.use((err, req, res, next) => {
+    if (err.name === 'UnauthorizedError') {
+        res.status(401);
+        res.json({ 'message': err.name + ': ' + err.message });
+    }
+});
+
 http.createServer((req, res) => {
-    res.writeHead(301, {'Location': 'https://localhost:' + httpsPort + req.url});
+    res.writeHead(301, { 'Location': 'https://localhost:' + httpsPort + req.url });
     res.end();
 }).listen(8080);
 

@@ -4,8 +4,20 @@
         <li class="nav-item">
             <a class="nav-link" routerLink="/cats">Home</a>
         </li>
-        <li class="navbar-item">
+        <li class="nav-item">
             <a class="nav-link" routerLink="/create">Create</a>
+        </li>
+
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+        <li class="nav-item" *ngIf="!auth.isLoggedIn()">
+            <a routerLink="/login">Sign in</a>
+        </li>
+        <li class="nav-item" *ngIf="!auth.isLoggedIn()">
+            <a class="nav-link" routerLink="/signup">Register</a>
+        </li>
+        <li *ngIf="auth.isLoggedIn()">
+            <a (click)="auth.logout()">Logout</a>
         </li>
     </ul>
 </nav>

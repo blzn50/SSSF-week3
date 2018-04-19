@@ -18,37 +18,35 @@ export class CatService {
   ) { }
 
   httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'multipart/form-data',
-    })
+    headers: new HttpHeaders({ 'Authorization': localStorage.getItem('jwtToken') })
   };
 
   getCats(): Observable<Cat[]> {
-    return this.http.get<Cat[]>(this.uri+'api/cats')
+    return this.http.get<Cat[]>(this.uri + 'api/cats', this.httpOptions)
       .map(res => { return res });
   }
 
   getOneCat(id) {
-    return this.http.get<any>(this.uri+'api/'+ id).map(res => {return res});
+    return this.http.get<any>(this.uri + 'api/' + id, this.httpOptions).map(res => { return res });
   }
 
-  searchCat(key:string) {
+  searchCat(key: string) {
     key = key.trim();
     const options = key ? 'some works' : {};
-    this.http.get<Cat[]>(this.uri+'api/search');
-      
+    this.http.get<Cat[]>(this.uri + 'api/search');
+
   }
 
   addCat(data: Cat): Observable<Cat> {
-    return this.http.post<Cat>(this.uri+'api/upload', data);
+    return this.http.post<Cat>(this.uri + 'api/upload', data, this.httpOptions);
   }
 
   updateCat(id, data): Observable<Cat> {
-    return this.http.patch<Cat>(this.uri+'api/' + id, data);
+    return this.http.patch<Cat>(this.uri + 'api/' + id, data, this.httpOptions);
   }
 
   deleteCat(id): Observable<{}> {
-    return this.http.delete<Cat>(this.uri+'api/' + id).map(res => {return res});
+    return this.http.delete<Cat>(this.uri + 'api/' + id, this.httpOptions).map(res => { return res });
   }
 
 }

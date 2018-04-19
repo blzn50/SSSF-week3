@@ -1,3 +1,4 @@
+import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
@@ -38,7 +39,12 @@ export class CatComponent implements OnInit, OnDestroy {
     this.cs.getCats()
       .subscribe(
         catsData => this.cats = catsData,
-        error => console.log(error)
+        err => {
+          if (err.status === 401) {
+            console.log(err);
+            this.router.navigateByUrl('/login');
+          }
+        }
       );
   }
 
@@ -46,7 +52,12 @@ export class CatComponent implements OnInit, OnDestroy {
     this.cs.getOneCat(id)
       .subscribe(
         data => this.selectedCat = data,
-        error => console.log(error)
+        err => {
+          if (err.status === 401) {
+            console.log(err);
+            this.router.navigateByUrl('/login');
+          }
+        }
       );
   }
 

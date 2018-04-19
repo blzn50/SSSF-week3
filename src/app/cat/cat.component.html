@@ -3,7 +3,7 @@
     <input type="text" [(ngModel)]="term" name="term" class="form-control" placeholder="Search">
   </form>
   <h1>Cats</h1>
-    <div class="row">
+  <div class="row">
     <div class="col-sm-12 col-md-4" *ngFor="let cat of (cats | filter: term)">
       <div class="card" style="width: 18rem;">
         <div class="card-head">

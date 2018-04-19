@@ -5,12 +5,14 @@ const moment = require('moment');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
 const db = require('../models/database');
+require('../config/passport')(passport);
 const coords = require('../models/coordinates');
 const resizer = require('../models/resizer');
-
-// const baseURL = 'http://localhost:8000/';
-
+const mongoose = require('mongoose');
+const User = mongoose.model('User');
 const Cat = db.getSchema('Cat');
 
 /* image storage */
@@ -52,22 +54,79 @@ const filDel = (pathToFile) => {
     });
 };
 
+const getToken = (headers) => {
+    if (headers && headers.authorization) {
+        let parted = headers.authorization.split(' ');
+        if (parted.length === 2) {
+            return parted[1];
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+};
+
 // routes
-router.get('/cats', (req, res) => {
-    Cat.find().then((data) => {
-        res.json(data);
-    }).catch((err) => console.log(err));
+router.post('/signup', (req, res) => {
+    if (!req.body.username || !req.body.password) {
+        res.json({ success: false, msg: 'Please pass username and password' });
+    } else {
+        let user = new User({
+            username: req.body.username,
+            password: req.body.password,
+        });
+        user.save((err) => {
+            if (err) {
+                console.log(err);
+                return res.json({ success: false, msg: 'Username already exists' })
+            }
+            res.json({ success: true, msg: 'Successfully created user' });
+        });
+    }
+});
+
+router.post('/login', (req, res) => {
+    User.findOne({ username: req.body.username }, (err, user) => {
+        if (err) throw err;
+
+        if (!user) {
+            res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
+        } else {
+            user.comparePassword(req.body.password, (err, isMatch) => {
+                if (isMatch && !err) {
+                    user.password = '';
+                    const token = jwt.sign(user.toJSON(), process.env.JWT);
+                    // return the information including token as JSON
+                    res.json({ success: true, token: 'JWT ' + token });
+                    // return;
+                } else {
+                    res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
+                }
+            });
+        }
+    });
+});
+
+router.get('/cats', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const token = getToken(req.headers);
+    if (token) {
+        Cat.find({user: req.user._id}).then((data) => {
+            res.json(data);
+        }).catch((err) => console.log(err));
+    } else {
+        res.sendStatus(403);
+    }
 });
 
 // data upload to db
-router.post('/upload', (req, res, next) => {
+router.post('/upload', passport.authenticate('jwt', { session: false }), (req, res, next) => {
     upload(req, res, (err) => {
         if (err) {
             console.log(err);
             res.sendStatus(400);
         } else {
-            console.log(req.file);
-            req.body['original'] = 'uploads/'+req.file.filename;
+            req.body['original'] = 'uploads/' + req.file.filename;
             req.body['time'] = moment().format('YYYY-MM-DD HH:mm');
             // go to extract exif from image
             next();
@@ -97,61 +156,74 @@ router.post('/upload', (req, res, next) => {
             req.body.image = medPath;
             next();
         });
-}
-, (req, res) => {
-    Cat.create(req.body).then((post) => {
-        console.log('cat uploaded');
-        res.send('cat posted');
-    });
+}, (req, res) => {
+    const token = getToken(req.headers);
+    if (token) {
+        req.body.user = req.user._id;
+        Cat.create(req.body).then((post) => {
+            console.log('cat uploaded');
+            res.send('cat posted');
+        });
+    } else {
+        return res.sendStatus(403);
+    }
 }
 );
 
-// upload to db
-// router.use('/upload', (req, res) => {
-//     Cat.create(req.body).then((post) => {
-//         res.send(post);
-//     });
-// });
-
-
-router.get('/:id', (req, res) => {
-    Cat.findById(req.params.id, (err, cat) => {
-        if (err) {
-            console.log(err);
-            res.json(err);
-        } else {
-            fs.createReadStream(path.resolve(cat.thumbnail)).pipe(res);
-            fs.createReadStream(path.resolve(cat.image)).pipe(res);
-            console.log('cat gotten');
-            res.json(cat);
-        }
-    });
-});
-
-router.patch('/:id', (req, res) => {
-    Cat.findByIdAndUpdate({_id: req.params.id}, req.body, {new: true},
-        (err, cat) => {
+router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const token = getToken(req.headers);
+    if (token) {
+        Cat.findById(req.params.id, (err, cat) => {
             if (err) {
                 console.log(err);
                 res.json(err);
             } else {
-                console.log('cat updated in db');
-                console.log(cat);
+                fs.createReadStream(path.resolve(cat.thumbnail)).pipe(res);
+                fs.createReadStream(path.resolve(cat.image)).pipe(res);
+                console.log('cat gotten');
                 res.json(cat);
             }
         });
+    } else {
+        res.sendStatus(403);
+    }
 });
 
-router.delete('/:id', (req, res) => {
-
-    Cat.findByIdAndRemove(req.params.id, req.body, (err, post) => {
-        if (err) return res.json(err);
-
-        filDel(post.thumbnail);
-        filDel(post.original);
-        filDel(post.image);
-        res.json('cat deleted');
-    });
+router.patch('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const token = getToken(req.headers);
+    if (token) {
+        Cat.findByIdAndUpdate({ _id: req.params.id }, req.body, { new: true },
+            (err, cat) => {
+                if (err) {
+                    console.log(err);
+                    res.json(err);
+                } else {
+                    console.log('cat updated in db');
+                    console.log(cat);
+                    res.json(cat);
+                }
+            });
+    } else {
+        res.sendStatus(403);
+    }
 });
+
+router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const token = getToken(req.headers);
+    if (token) {
+        Cat.findByIdAndRemove(req.params.id, req.body, (err, post) => {
+            if (err) return res.json(err);
+
+            filDel(post.thumbnail);
+            filDel(post.original);
+            filDel(post.image);
+            res.json('cat deleted');
+        });
+    } else {
+        res.sendStatus(403);
+    }
+});
+
+
 
 module.exports = router;

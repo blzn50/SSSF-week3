@@ -14,6 +14,7 @@ const catSchema = new Schema({
     thumbnail: String,
     image: String,
     original: String,
+    user: String,
 });
 
 module.exports = mongoose.model('Cat', catSchema);
